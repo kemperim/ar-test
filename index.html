@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR Мебель</title>
+  <title>Просмотр мебели</title>
   <style>
     body {
       margin: 0;
@@ -24,19 +24,6 @@
       display: block;
       margin: 0 auto;
     }
-    .btn-ar {
-      margin-top: 1rem;
-      padding: 0.8rem 1.5rem;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .btn-ar:hover {
-      background-color: #2980b9;
-    }
   </style>
 </head>
 <body>
@@ -45,65 +32,26 @@
 
   <model-viewer 
     id="viewer"
-    src="stool.glb"
-    ios-src="https://example.com/models/stool.usdz "
-    alt="Стул"
+    alt="Мебель"
     camera-controls
     auto-rotate
-    ar
     shadow-intensity="1"
   >
   </model-viewer>
 
-  <!-- Кнопка запуска AR -->
-  <button class="btn-ar" onclick="launchAR()">Показать в AR</button>
-
   <!-- Подключение Model Viewer -->
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <script type="module" src="https://unpkg.com/ @google/model-viewer/dist/model-viewer.min.js"></script>
 
-  <script>
-    let isDragging = false;
-    let dragOffset = new BABYLON.Vector3();
+  <script type="module">
+    // Получаем имя модели из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const modelName = urlParams.get('model') || 'stool.glb';
 
-    function launchAR() {
-      const viewer = document.getElementById("viewer");
-      if (viewer && viewer.activateAr) {
-        viewer.activateAr();
-      } else {
-        alert("Model Viewer ещё не загружен или не поддерживается.");
-      }
-    }
+    const viewer = document.getElementById("viewer");
 
-    // Обработка касаний
-    document.querySelector('model-viewer').addEventListener('ar-hit-test', (event) => {
-      if (event.detail.status === 'hit') {
-        const hitPoint = event.detail.hitPoint;
-        const viewer = document.querySelector('model-viewer');
-        const model = viewer.model;
-
-        // Корректируем высоту модели, чтобы она была ниже стола
-        const correctedPosition = new BABYLON.Vector3(
-          hitPoint.x,
-          hitPoint.y - 0.5, // Уменьшаем высоту на 0.5 метра
-          hitPoint.z
-        );
-
-        // Перемещаем модель
-        model.position = correctedPosition;
-      }
-    });
-
-    // Логи для отладки
-    window.addEventListener('load', () => {
-      console.log("Page loaded");
-    });
-
-    document.querySelector('model-viewer')?.addEventListener('error', (e) => {
-      console.error("Model Viewer error:", e.detail);
-    });
+    // Указываем путь к модели
+    viewer.src = `https://192.168.8.100:443/uploads/3d/${modelName}`;
   </script>
 
 </body>
 </html>
-
-
