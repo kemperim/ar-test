@@ -45,7 +45,7 @@
   <script type="module">
     // Получаем имя модели из URL
     const urlParams = new URLSearchParams(window.location.search);
-    const modelName = urlParams.get('model') || 'stool.glb';
+    const modelName = urlParams.get('model');
 
     const viewer = document.getElementById("viewer");
 
