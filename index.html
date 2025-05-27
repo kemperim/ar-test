@@ -14,8 +14,8 @@
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #1e1e1e;
-      color: white;
+      background-color: #f9f9f9;
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -28,10 +28,11 @@
       width: 100%;
       max-width: 700px;
       aspect-ratio: 1 / 1;
-      background-color: #2a2a2a;
+      background-color: #fff;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      position: relative;
     }
 
     model-viewer {
@@ -45,13 +46,42 @@
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 1.2rem;
-      color: #999;
+      color: #888;
       animation: blink 1.5s infinite;
     }
 
     @keyframes blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
+    }
+
+    /* Подсказка */
+    .hint {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hint svg {
+      width: 20px;
+      height: 20px;
+      fill: #333;
+    }
+
+    .hint.show {
+      opacity: 1;
     }
   </style>
 </head>
@@ -68,27 +98,59 @@
       shadow-intensity="1"
     >
     </model-viewer>
+    <div class="hint" id="hint">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14h-2v-2h2zm0-4h-2V7h2z"/></svg>
+      Перетащите модель, чтобы вращать её!
+    </div>
   </div>
 
   <!-- Подключение Model Viewer -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <script type="module">
+    const viewer = document.getElementById("viewer");
+    const loadingIndicator = document.querySelector(".loading");
+    const hint = document.getElementById("hint");
+
     const urlParams = new URLSearchParams(window.location.search);
     const modelName = urlParams.get('model') || 'default.glb';
-
-    const viewer = document.getElementById("viewer");
     viewer.src = `https://kemperim.github.io/ar-test/models/${modelName}`;
 
-    // Скрываем индикатор загрузки после загрузки модели
     viewer.addEventListener('load', () => {
-      document.querySelector('.loading').style.display = 'none';
+      loadingIndicator.style.display = 'none';
     });
 
     viewer.addEventListener('error', (e) => {
       console.error("Ошибка загрузки модели:", e.detail);
       alert("Не удалось загрузить модель. Проверьте имя файла или доступность модели.");
     });
+
+    // Подсказка при бездействии (AFK)
+    let afkTimer;
+    const afkTime = 5000; // 5 секунд
+
+    function showHint() {
+      hint.classList.add("show");
+    }
+
+    function hideHint() {
+      hint.classList.remove("show");
+      resetAfkTimer();
+    }
+
+    function resetAfkTimer() {
+      clearTimeout(afkTimer);
+      afkTimer = setTimeout(showHint, afkTime);
+    }
+
+    // Слушаем любое взаимодействие пользователя
+    window.addEventListener("mousemove", hideHint);
+    window.addEventListener("keydown", hideHint);
+    window.addEventListener("click", hideHint);
+    window.addEventListener("touchstart", hideHint);
+
+    // Стартуем таймер AFK при загрузке
+    resetAfkTimer();
   </script>
 
 </body>
