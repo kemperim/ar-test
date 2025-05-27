@@ -3,86 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AR Просмотр</title>
-
-  <!-- Подключаем model-viewer -->
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
+  <title>AR</title>
   <style>
-    body {
+    body, html {
       margin: 0;
       padding: 0;
-      background-color: #f0f0f0;
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      height: 100%;
       overflow: hidden;
+      background: #000;
     }
-
     model-viewer {
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       display: block;
+      background: #000;
     }
   </style>
 </head>
 <body>
+  <model-viewer
+    id="viewer"
+    src=""
+    ios-src=""
+    alt="AR Модель"
+    camera-controls
+    auto-rotate
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    shadow-intensity="1"
+    exposure="1"
+    environment-image="neutral"
+  ></model-viewer>
 
-<model-viewer
-  id="arModel"
-  camera-controls
-  auto-rotate
-  ar
-  shadow-intensity="1"
-  alt="3D модель"
->
-</model-viewer>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-<script type="module">
-  // Получаем имя модели из URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const modelName = urlParams.get('model');
-
-  if (!modelName) {
-    alert('Не указано имя модели в URL');
-    console.error('Модель не указана');
-    document.getElementById('arModel').style.display = 'none';
-    document.body.innerHTML = '<h1>Ошибка: не указана модель</h1>';
-    throw new Error('Параметр "model" отсутствует в URL');
-  }
-
-  const modelPath = `https://kemperim.github.io/ar-test/models/${modelName}`;
-
-  const viewer = document.getElementById('arModel');
-
-  // Устанавливаем путь к модели
-  viewer.setAttribute('src', modelPath);
-
-  // Для iOS — можно добавить .usdz версию, если она есть
-  // viewer.setAttribute('ios-src', `models/usdz/${modelName}.usdz`);
-
-  // После загрузки модели активируем AR (если возможно)
-  viewer.addEventListener('load', () => {
-    console.log('Модель загружена:', modelPath);
-    if (viewer.activateAr) {
-      viewer.activateAr().catch(err => {
-        console.warn('AR не запущен автоматически. Возможно, устройство не поддерживает это.', err);
-      });
-    } else {
-      console.warn('activateAr() не доступен. AR не поддерживается.');
+  <script>
+    function getModelNameFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const modelName = params.get("model");
+      return modelName ? modelName : "default-model.glb"; // укажи здесь имя модели по умолчанию
     }
-  });
 
-  // Обработка нажатия на экран для AR размещения
-  viewer.addEventListener('ar-hit-test', (event) => {
-    if (event.detail.status === 'hit') {
-      const hitPoint = event.detail.hitPoint;
-      viewer.model.position.set(hitPoint.x, hitPoint.y - 0.5, hitPoint.z);
-    }
-  });
-</script>
+    window.addEventListener("load", () => {
+      const modelName = getModelNameFromURL();
+      const modelUrl = `https://kemperim.github.io/ar-test/models/${modelName}`;
 
+      const viewer = document.getElementById("viewer");
+      viewer.src = modelUrl;
+      viewer.iosSrc = modelUrl.replace(".glb", ".usdz");
+
+      setTimeout(() => {
+        if (viewer.activateAR) {
+          viewer.activateAR();
+        } else {
+          console.warn("AR режим не поддерживается или Model Viewer ещё не загружен.");
+        }
+      }, 1000);
+    });
+
+    document.getElementById("viewer").addEventListener("error", (e) => {
+      console.error("Ошибка загрузки модели:", e.detail);
+    });
+  </script>
 </body>
 </html>
